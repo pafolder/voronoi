@@ -32,9 +32,9 @@ public class Task extends Data {
 
         List<Integer> getAdjacentCellsOfSameColorIndexes(int cellIndex) {
             List<Integer> result = new ArrayList<>();
-            for (int i : cells[cellIndex].adjacentCellsIndexes) {
+            cells[cellIndex].adjacentCellsIndexes.forEach(i -> {
                 if (cells[i].isWhite == cells[cellIndex].isWhite) result.add(i);
-            }
+            });
             return result;
         }
     }
@@ -44,8 +44,7 @@ public class Task extends Data {
         boolean isSimplyConnected = false;
 
         void colourWhite(VoronoiDiagram clonedVd) {
-            for (int cellIndex : cellIndexes)
-                clonedVd.cells[cellIndex].isWhite = true;
+            cellIndexes.forEach(i -> clonedVd.cells[i].isWhite = true);
         }
     }
 
