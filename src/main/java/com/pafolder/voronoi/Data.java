@@ -1,11 +1,11 @@
 package com.pafolder.voronoi;
 
-public class Initialization {
+public class Data {
     static final int NUMBER_OF_CELLS = 20;
-    static Main.VoronoiDiagram vd;
+    static Task.VoronoiDiagram vd;
 
-    Initialization() {
-        int[][] xx = {
+    Data() {
+        int[][] values = {
                 {0, 1, 1, 2, 6, 18},
                 {1, 0, 0, 2, 3, 4, 6},
                 {2, 1, 0, 3, 5},
@@ -28,13 +28,13 @@ public class Initialization {
                 {19, 1, 5, 13, 16, 17, 18}
         };
 
-        vd = new Main.VoronoiDiagram();
-        for (int[] x : xx) {
-            int i = x[0];
-            vd.cells[i] = new Main.Cell();
-            vd.cells[i].isWhite = x[1] == 1;
-            for (int j = 2; j < x.length; j++)
-                vd.cells[i].adjacentCellsIndexes.add(x[j]);
+        vd = new Task.VoronoiDiagram();
+        for (int[] v : values) {
+            int i = v[0];
+            vd.cells[i] = new Task.Cell();
+            vd.cells[i].isWhite = v[1] == 1;
+            for (int j = 2; j < v.length; j++)
+                vd.cells[i].adjacentCellsIndexes.add(v[j]);
         }
     }
 }

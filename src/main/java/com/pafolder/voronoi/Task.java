@@ -6,7 +6,7 @@ import java.util.List;
 
 import static java.lang.System.out;
 
-public class Main extends Initialization {
+public class Task extends Data {
 
     static class Cell {
         Point seed;
@@ -82,25 +82,23 @@ public class Main extends Initialization {
         List<Domain> domains = getDomainsWithoutStatus(vd);
         int whiteDomainsCount = countDomainsInList(true, false, domains);
         for (Domain d : domains) {
-            d.isSimplyConnected = true;
             VoronoiDiagram clonedVd = vd.clone();
             d.colourWhite(clonedVd);
-            List<Domain> domainsClone = getDomainsWithoutStatus(clonedVd);
-            int whiteDomainsCountAfterColouredWhite = countDomainsInList(true, false, domainsClone);
-            if (whiteDomainsCountAfterColouredWhite != whiteDomainsCount) {
-                d.isSimplyConnected = false;
-            }
+            d.isSimplyConnected = countDomainsInList(true, false,
+                    getDomainsWithoutStatus(clonedVd)) == whiteDomainsCount;
         }
         return domains;
     }
 
     public static void main(String[] args) {
-        Main main = new Main();
-        List<Domain> domainsWithSimplyConnectedStatus = main.getDomainsWithSimplyConnectedStatus(vd);
+        Task task = new Task();
+
+        List<Domain> domainsWithSimplyConnectedStatus = task.getDomainsWithSimplyConnectedStatus(vd);
+
         out.println("Total number of Domains: " + domainsWithSimplyConnectedStatus.size());
         out.println("Number of Non-white Domains: " +
-                main.countDomainsInList(false, false, domainsWithSimplyConnectedStatus));
+                task.countDomainsInList(false, false, domainsWithSimplyConnectedStatus));
         out.println("Number of Non-white Simply Connected Domains: " +
-                main.countDomainsInList(false, true, domainsWithSimplyConnectedStatus));
+                task.countDomainsInList(false, true, domainsWithSimplyConnectedStatus));
     }
 }

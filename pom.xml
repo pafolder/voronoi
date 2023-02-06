@@ -35,7 +35,7 @@
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <transformers>
                                 <transformer>
-                                    <mainClass>com.pafolder.voronoi.Main</mainClass>
+                                    <mainClass>com.pafolder.voronoi.Task</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
