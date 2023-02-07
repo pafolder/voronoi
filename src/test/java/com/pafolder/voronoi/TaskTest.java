@@ -1,20 +1,30 @@
 package com.pafolder.voronoi;
 
 import org.junit.jupiter.api.Assertions;
-
-import java.util.List;
+import org.junit.jupiter.api.Test;
 
 class TaskTest {
-    private Task main = new Task();
+    @Test
+    void example1Test() {
+        VoronoiDiagram vd = new VoronoiDiagram(Data.example1);
+        Assertions.assertEquals(4, vd.getDomainsCount());
+        Assertions.assertEquals(2, vd.getDomainsCount(false, Status.ANY));
+        Assertions.assertEquals(1, vd.getDomainsCount(false, Status.IS_SIMPLY_CONNECTED));
+    }
 
-    @org.junit.jupiter.api.Test
-    void mainTest() {
-        List<Task.Domain> domainsWithSimplyConnectedStatus = main.getDomainsWithSimplyConnectedStatus(Task.vd);
-        Assertions.assertEquals(4,
-                domainsWithSimplyConnectedStatus.size());
-        Assertions.assertEquals(2,
-                main.countDomainsInList(false, Task.Status.IS_IGNORED, domainsWithSimplyConnectedStatus));
-        Assertions.assertEquals(1,
-                main.countDomainsInList(false, Task.Status.IS_SIMPLY_CONNECTED, domainsWithSimplyConnectedStatus));
+    @Test
+    void example2Test() {
+        VoronoiDiagram vd = new VoronoiDiagram(Data.example2);
+        Assertions.assertEquals(3, vd.getDomainsCount());
+        Assertions.assertEquals(1, vd.getDomainsCount(false, Status.ANY));
+        Assertions.assertEquals(0, vd.getDomainsCount(false, Status.IS_SIMPLY_CONNECTED));
+    }
+
+    @Test
+    void example3Test() {
+        VoronoiDiagram vd = new VoronoiDiagram(Data.example3);
+        Assertions.assertEquals(4, vd.getDomainsCount());
+        Assertions.assertEquals(1, vd.getDomainsCount(false, Status.ANY));
+        Assertions.assertEquals(0, vd.getDomainsCount(false, Status.IS_SIMPLY_CONNECTED));
     }
 }
