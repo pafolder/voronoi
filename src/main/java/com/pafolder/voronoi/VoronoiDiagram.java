@@ -7,15 +7,14 @@ public class VoronoiDiagram {
     private static final int OFFSET_OF_COLOR_IN_DATA_ARRAY = 1;
     private static final int OFFSET_OF_ADJACENT_INDEXES_IN_DATA_ARRAY = 2;
 
-    private CellWithAdjacents[] cellsWithAdjacents;
-    private int numberOfCells;
+    private List<CellWithAdjacents> cellsWithAdjacents;
     private List<Domain> domains;
 
-    static private class CellWithAdjacents {
+    static class CellWithAdjacents {
         Point seed; // Not used for computing domains
         boolean isWhite;
         boolean isProcessed;
-        Point[] polytopePoints; // Not used for computing domains
+        List<Point> polytopePoints; // Not used for computing domains
         List<Integer> adjacentCellsIndexes = new ArrayList<>();
     }
 
@@ -27,57 +26,60 @@ public class VoronoiDiagram {
     static class Domain {
         Set<Integer> cellIndexes = new HashSet<>();
         Status isSimplyConnected = Status.ANY;
+        boolean isWhite;
     }
 
     public VoronoiDiagram() {
     }
 
     public VoronoiDiagram(int[][] dataArray) {
-        numberOfCells = dataArray.length;
-        cellsWithAdjacents = new CellWithAdjacents[numberOfCells];
+        cellsWithAdjacents = new LinkedList<>();
         for (int[] d : dataArray) {
-            int i = d[0];
-            cellsWithAdjacents[i] = new CellWithAdjacents();
-            cellsWithAdjacents[i].isWhite = d[OFFSET_OF_COLOR_IN_DATA_ARRAY] == 1;
+            CellWithAdjacents cell = new CellWithAdjacents();
+            cell.isWhite = d[OFFSET_OF_COLOR_IN_DATA_ARRAY] == 1;
             for (int j = OFFSET_OF_ADJACENT_INDEXES_IN_DATA_ARRAY; j < d.length; j++) {
-                cellsWithAdjacents[i].adjacentCellsIndexes.add(d[j]);
+                cell.adjacentCellsIndexes.add(d[j]);
             }
+            cellsWithAdjacents.add(cell);
         }
     }
 
     @Override
     public VoronoiDiagram clone() {
         VoronoiDiagram newVd = new VoronoiDiagram();
-        newVd.cellsWithAdjacents = new CellWithAdjacents[numberOfCells];
-        for (int i = 0; i < cellsWithAdjacents.length; i++) {
-            newVd.cellsWithAdjacents[i] = new CellWithAdjacents();
-            newVd.cellsWithAdjacents[i].isWhite = cellsWithAdjacents[i].isWhite;
-            newVd.cellsWithAdjacents[i].adjacentCellsIndexes.addAll(cellsWithAdjacents[i].adjacentCellsIndexes);
-        }
+        newVd.cellsWithAdjacents = new LinkedList<>();
+        cellsWithAdjacents.forEach(cell -> {
+            CellWithAdjacents clonedCell = new CellWithAdjacents();
+            clonedCell.isWhite = cell.isWhite;
+            clonedCell.isProcessed = false;
+            clonedCell.adjacentCellsIndexes.addAll(cell.adjacentCellsIndexes);
+            newVd.cellsWithAdjacents.add(clonedCell);
+        });
         return newVd;
     }
 
     private List<Integer> getAdjacentCellsOfSameColorIndexes(int cellIndex) {
         List<Integer> result = new ArrayList<>();
-        cellsWithAdjacents[cellIndex].adjacentCellsIndexes.forEach(i -> {
-            if (cellsWithAdjacents[i].isWhite == cellsWithAdjacents[cellIndex].isWhite) result.add(i);
+        cellsWithAdjacents.get(cellIndex).adjacentCellsIndexes.forEach(i -> {
+            if (cellsWithAdjacents.get(i).isWhite == cellsWithAdjacents.get(cellIndex).isWhite) result.add(i);
         });
         return result;
     }
 
     private void computeDomainsWithoutSimplyConnectedStatus() {
         domains = new ArrayList<>();
-        for (int ci = 0; ci < cellsWithAdjacents.length; ci++) {
-            if (cellsWithAdjacents[ci].isProcessed) continue;
+        for (int ajacentCellIndex = 0; ajacentCellIndex < cellsWithAdjacents.size(); ajacentCellIndex++) {
+            if (cellsWithAdjacents.get(ajacentCellIndex).isProcessed) continue;
             Domain domain = new Domain();
-            domain.cellIndexes.add(ci);
-            Queue<Integer> queue = new LinkedList<>(getAdjacentCellsOfSameColorIndexes(ci));
+            domain.isWhite = cellsWithAdjacents.get(ajacentCellIndex).isWhite;
+            domain.cellIndexes.add(ajacentCellIndex);
+            Queue<Integer> queue = new LinkedList<>(getAdjacentCellsOfSameColorIndexes(ajacentCellIndex));
             while (!queue.isEmpty()) {
                 int i = queue.poll();
-                if (!cellsWithAdjacents[i].isProcessed) {
+                if (!cellsWithAdjacents.get(i).isProcessed) {
                     queue.addAll(getAdjacentCellsOfSameColorIndexes(i));
                 }
-                cellsWithAdjacents[i].isProcessed = true;
+                cellsWithAdjacents.get(i).isProcessed = true;
                 domain.cellIndexes.add(i);
             }
             domains.add(domain);
@@ -85,19 +87,16 @@ public class VoronoiDiagram {
     }
 
     public int getDomainsCount() {
-        if (domains == null) {
-            computeDomains();
-        }
+        computeDomainsIfNeeded();
         return domains.size();
     }
 
+
     public int getDomainsCount(boolean isWhite, Status status) {
-        if (domains == null) {
-            computeDomains();
-        }
+        computeDomainsIfNeeded();
         int count = 0;
         for (Domain d : domains) {
-            count += cellsWithAdjacents[d.cellIndexes.iterator().next()].isWhite == isWhite &&
+            count += cellsWithAdjacents.get(d.cellIndexes.iterator().next()).isWhite == isWhite &&
                     (d.isSimplyConnected == status || status == Status.ANY) ? 1 : 0;
         }
         return count;
@@ -105,17 +104,25 @@ public class VoronoiDiagram {
 
     public void computeDomains() {
         computeDomainsWithoutSimplyConnectedStatus();
-        for (Domain d : domains) {
-            VoronoiDiagram cloned = clone();
-            cloned.colourCellsWhite(d);
-            cloned.computeDomainsWithoutSimplyConnectedStatus();
-            d.isSimplyConnected = cloned.getDomainsCount(true, Status.ANY) ==
-                    getDomainsCount(true, Status.ANY) ?
-                    Status.IS_SIMPLY_CONNECTED : Status.IS_NON_SIMPLY_CONNECTED;
-        }
+        domains.forEach(d -> {
+            if (!d.isWhite) {
+                VoronoiDiagram cloned = clone();
+                cloned.colourCellsWhite(d);
+                cloned.computeDomainsWithoutSimplyConnectedStatus();
+                d.isSimplyConnected = cloned.getDomainsCount(true, Status.ANY) ==
+                        getDomainsCount(true, Status.ANY) ?
+                        Status.IS_SIMPLY_CONNECTED : Status.IS_NON_SIMPLY_CONNECTED;
+            }
+        });
     }
 
     private void colourCellsWhite(Domain domain) {
-        domain.cellIndexes.forEach(i -> cellsWithAdjacents[i].isWhite = true);
+        domain.cellIndexes.forEach(i -> cellsWithAdjacents.get(i).isWhite = true);
+    }
+
+    void computeDomainsIfNeeded() {
+        if (domains == null) {
+            computeDomains();
+        }
     }
 }
