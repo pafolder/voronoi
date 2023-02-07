@@ -5,7 +5,7 @@ import java.util.List;
 
 public class VoronoiDiagram {
     private static final int OFFSET_OF_COLOR_IN_DATA_ARRAY = 1;
-    private static final int OFFSET_OF_ADJACENT_INDEXES_IN_DATA_ARRAY = 2;
+    private static final int OFFSET_OF_ADJACENT_INDICES_IN_DATA_ARRAY = 2;
 
     private List<CellWithAdjacents> cellsWithAdjacents;
     private List<Domain> domains;
@@ -15,16 +15,16 @@ public class VoronoiDiagram {
         boolean isWhite;
         boolean isProcessed;
         List<Point> polytopePoints; // Not used for computing domains
-        List<Integer> adjacentCellsIndexes = new ArrayList<>();
+        List<Integer> adjacentCellsIndices = new ArrayList<>();
     }
 
-    static class Point {
+    static class Point { // Not used for computing domains
         double x;
         double y;
     }
 
     static class Domain {
-        Set<Integer> cellIndexes = new HashSet<>();
+        Set<Integer> cellIndices = new HashSet<>();
         Status isSimplyConnected = Status.ANY;
         boolean isWhite;
     }
@@ -37,8 +37,8 @@ public class VoronoiDiagram {
         for (int[] d : dataArray) {
             CellWithAdjacents cell = new CellWithAdjacents();
             cell.isWhite = d[OFFSET_OF_COLOR_IN_DATA_ARRAY] == 1;
-            for (int j = OFFSET_OF_ADJACENT_INDEXES_IN_DATA_ARRAY; j < d.length; j++) {
-                cell.adjacentCellsIndexes.add(d[j]);
+            for (int j = OFFSET_OF_ADJACENT_INDICES_IN_DATA_ARRAY; j < d.length; j++) {
+                cell.adjacentCellsIndices.add(d[j]);
             }
             cellsWithAdjacents.add(cell);
         }
@@ -52,15 +52,15 @@ public class VoronoiDiagram {
             CellWithAdjacents clonedCell = new CellWithAdjacents();
             clonedCell.isWhite = cell.isWhite;
             clonedCell.isProcessed = false;
-            clonedCell.adjacentCellsIndexes.addAll(cell.adjacentCellsIndexes);
+            clonedCell.adjacentCellsIndices.addAll(cell.adjacentCellsIndices);
             newVd.cellsWithAdjacents.add(clonedCell);
         });
         return newVd;
     }
 
-    private List<Integer> getAdjacentCellsOfSameColorIndexes(int cellIndex) {
+    private List<Integer> getAdjacentCellsOfSameColorIndices(int cellIndex) {
         List<Integer> result = new ArrayList<>();
-        cellsWithAdjacents.get(cellIndex).adjacentCellsIndexes.forEach(i -> {
+        cellsWithAdjacents.get(cellIndex).adjacentCellsIndices.forEach(i -> {
             if (cellsWithAdjacents.get(i).isWhite == cellsWithAdjacents.get(cellIndex).isWhite) result.add(i);
         });
         return result;
@@ -72,15 +72,15 @@ public class VoronoiDiagram {
             if (cellsWithAdjacents.get(ajacentCellIndex).isProcessed) continue;
             Domain domain = new Domain();
             domain.isWhite = cellsWithAdjacents.get(ajacentCellIndex).isWhite;
-            domain.cellIndexes.add(ajacentCellIndex);
-            Queue<Integer> queue = new LinkedList<>(getAdjacentCellsOfSameColorIndexes(ajacentCellIndex));
+            domain.cellIndices.add(ajacentCellIndex);
+            Queue<Integer> queue = new LinkedList<>(getAdjacentCellsOfSameColorIndices(ajacentCellIndex));
             while (!queue.isEmpty()) {
                 int i = queue.poll();
                 if (!cellsWithAdjacents.get(i).isProcessed) {
-                    queue.addAll(getAdjacentCellsOfSameColorIndexes(i));
+                    queue.addAll(getAdjacentCellsOfSameColorIndices(i));
                 }
                 cellsWithAdjacents.get(i).isProcessed = true;
-                domain.cellIndexes.add(i);
+                domain.cellIndices.add(i);
             }
             domains.add(domain);
         }
@@ -96,7 +96,7 @@ public class VoronoiDiagram {
         computeDomainsIfNeeded();
         int count = 0;
         for (Domain d : domains) {
-            count += cellsWithAdjacents.get(d.cellIndexes.iterator().next()).isWhite == isWhite &&
+            count += cellsWithAdjacents.get(d.cellIndices.iterator().next()).isWhite == isWhite &&
                     (d.isSimplyConnected == status || status == Status.ANY) ? 1 : 0;
         }
         return count;
@@ -117,7 +117,7 @@ public class VoronoiDiagram {
     }
 
     private void colourCellsWhite(Domain domain) {
-        domain.cellIndexes.forEach(i -> cellsWithAdjacents.get(i).isWhite = true);
+        domain.cellIndices.forEach(i -> cellsWithAdjacents.get(i).isWhite = true);
     }
 
     void computeDomainsIfNeeded() {
