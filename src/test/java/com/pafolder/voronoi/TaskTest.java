@@ -13,8 +13,8 @@ class TaskTest {
         Assertions.assertEquals(4,
                 domainsWithSimplyConnectedStatus.size());
         Assertions.assertEquals(2,
-                main.countDomainsInList(false, false, domainsWithSimplyConnectedStatus));
+                main.countDomainsInList(false, Task.Status.IS_IGNORED, domainsWithSimplyConnectedStatus));
         Assertions.assertEquals(1,
-                main.countDomainsInList(false, true, domainsWithSimplyConnectedStatus));
+                main.countDomainsInList(false, Task.Status.IS_SIMPLY_CONNECTED, domainsWithSimplyConnectedStatus));
     }
 }

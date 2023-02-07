@@ -31,10 +31,11 @@ public class Data {
         vd = new Task.VoronoiDiagram();
         for (int[] v : values) {
             int i = v[0];
-            vd.cells[i] = new Task.Cell();
-            vd.cells[i].isWhite = v[1] == 1;
-            for (int j = 2; j < v.length; j++)
-                vd.cells[i].adjacentCellsIndexes.add(v[j]);
+            vd.cellWithAdjacents[i] = new Task.CellWithAdjacents();
+            vd.cellWithAdjacents[i].isWhite = v[1] == 1;
+            for (int j = 2; j < v.length; j++) {
+                vd.cellWithAdjacents[i].adjacentCellsIndexes.add(v[j]);
+            }
         }
     }
 }

@@ -13,27 +13,30 @@ public class Task extends Data {
         boolean isWhite;
         boolean isProcessed;
         Point[] polytopePoints;
+    }
+
+    static class CellWithAdjacents extends Cell {
         List<Integer> adjacentCellsIndexes = new ArrayList<>();
     }
 
     static class VoronoiDiagram {
-        Cell[] cells = new Cell[NUMBER_OF_CELLS];
+        CellWithAdjacents[] cellWithAdjacents = new CellWithAdjacents[NUMBER_OF_CELLS];
 
         @Override
         public VoronoiDiagram clone() {
             VoronoiDiagram newVd = new VoronoiDiagram();
-            for (int i = 0; i < cells.length; i++) {
-                newVd.cells[i] = new Cell();
-                newVd.cells[i].isWhite = cells[i].isWhite;
-                newVd.cells[i].adjacentCellsIndexes.addAll(cells[i].adjacentCellsIndexes);
+            for (int i = 0; i < cellWithAdjacents.length; i++) {
+                newVd.cellWithAdjacents[i] = new CellWithAdjacents();
+                newVd.cellWithAdjacents[i].isWhite = cellWithAdjacents[i].isWhite;
+                newVd.cellWithAdjacents[i].adjacentCellsIndexes.addAll(cellWithAdjacents[i].adjacentCellsIndexes);
             }
             return newVd;
         }
 
         List<Integer> getAdjacentCellsOfSameColorIndexes(int cellIndex) {
             List<Integer> result = new ArrayList<>();
-            cells[cellIndex].adjacentCellsIndexes.forEach(i -> {
-                if (cells[i].isWhite == cells[cellIndex].isWhite) result.add(i);
+            cellWithAdjacents[cellIndex].adjacentCellsIndexes.forEach(i -> {
+                if (cellWithAdjacents[i].isWhite == cellWithAdjacents[cellIndex].isWhite) result.add(i);
             });
             return result;
         }
@@ -41,26 +44,26 @@ public class Task extends Data {
 
     static class Domain {
         Set<Integer> cellIndexes = new HashSet<>();
-        boolean isSimplyConnected = false;
+        Status isSimplyConnected = Status.IS_IGNORED;
 
         void colourWhite(VoronoiDiagram clonedVd) {
-            cellIndexes.forEach(i -> clonedVd.cells[i].isWhite = true);
+            cellIndexes.forEach(i -> clonedVd.cellWithAdjacents[i].isWhite = true);
         }
     }
 
     List<Domain> getDomainsWithoutStatus(VoronoiDiagram vd) {
         List<Domain> domains = new ArrayList<>();
-        for (int ci = 0; ci < vd.cells.length; ci++) {
-            if (vd.cells[ci].isProcessed) continue;
+        for (int ci = 0; ci < vd.cellWithAdjacents.length; ci++) {
+            if (vd.cellWithAdjacents[ci].isProcessed) continue;
             Domain domain = new Domain();
             domain.cellIndexes.add(ci);
             Queue<Integer> queue = new LinkedList<>(vd.getAdjacentCellsOfSameColorIndexes(ci));
             while (!queue.isEmpty()) {
                 int i = queue.poll();
-                if (!vd.cells[i].isProcessed) {
+                if (!vd.cellWithAdjacents[i].isProcessed) {
                     queue.addAll(vd.getAdjacentCellsOfSameColorIndexes(i));
                 }
-                vd.cells[i].isProcessed = true;
+                vd.cellWithAdjacents[i].isProcessed = true;
                 domain.cellIndexes.add(i);
             }
             domains.add(domain);
@@ -68,23 +71,24 @@ public class Task extends Data {
         return domains;
     }
 
-    int countDomainsInList(boolean isWhite, boolean isSimplyConnected, List<Domain> domains) {
+    int countDomainsInList(boolean isWhite, Status status, List<Domain> domains) {
         int count = 0;
         for (Domain d : domains) {
-            count += vd.cells[d.cellIndexes.iterator().next()].isWhite == isWhite &&
-                    ((d.isSimplyConnected == isSimplyConnected) || !isSimplyConnected) ? 1 : 0;
+            count += vd.cellWithAdjacents[d.cellIndexes.iterator().next()].isWhite == isWhite &&
+                    (d.isSimplyConnected == status || status == Status.IS_IGNORED) ? 1 : 0;
         }
         return count;
     }
 
     List<Domain> getDomainsWithSimplyConnectedStatus(VoronoiDiagram vd) {
         List<Domain> domains = getDomainsWithoutStatus(vd);
-        int whiteDomainsCount = countDomainsInList(true, false, domains);
+        int whiteDomainsCount = countDomainsInList(true, Status.IS_IGNORED, domains);
         for (Domain d : domains) {
             VoronoiDiagram clonedVd = vd.clone();
             d.colourWhite(clonedVd);
-            d.isSimplyConnected = countDomainsInList(true, false,
-                    getDomainsWithoutStatus(clonedVd)) == whiteDomainsCount;
+            d.isSimplyConnected = countDomainsInList(true, Status.IS_IGNORED,
+                    getDomainsWithoutStatus(clonedVd)) == whiteDomainsCount ?
+                    Status.IS_SIMPLY_CONNECTED : Status.IS_NON_SIMPLY_CONNECTED;
         }
         return domains;
     }
@@ -96,8 +100,14 @@ public class Task extends Data {
 
         out.println("Total number of Domains: " + domainsWithSimplyConnectedStatus.size());
         out.println("Number of Non-white Domains: " +
-                task.countDomainsInList(false, false, domainsWithSimplyConnectedStatus));
+                task.countDomainsInList(false, Status.IS_IGNORED, domainsWithSimplyConnectedStatus));
         out.println("Number of Non-white Simply Connected Domains: " +
-                task.countDomainsInList(false, true, domainsWithSimplyConnectedStatus));
+                task.countDomainsInList(false, Status.IS_SIMPLY_CONNECTED, domainsWithSimplyConnectedStatus));
+    }
+
+    enum Status {
+        IS_IGNORED,
+        IS_SIMPLY_CONNECTED,
+        IS_NON_SIMPLY_CONNECTED;
     }
 }
