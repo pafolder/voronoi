@@ -3,7 +3,7 @@ package com.pafolder.voronoi;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class TaskTest {
+class MainTest {
     @Test
     void example1Test() {
         VoronoiDiagram vd = new VoronoiDiagram(Data.example1);
@@ -26,5 +26,13 @@ class TaskTest {
         Assertions.assertEquals(4, vd.getDomainsCount());
         Assertions.assertEquals(1, vd.getDomainsCount(false, Status.ANY));
         Assertions.assertEquals(0, vd.getDomainsCount(false, Status.IS_SIMPLY_CONNECTED));
+    }
+
+    @Test
+    void example4Test() {
+        VoronoiDiagram vd = new VoronoiDiagram(Data.example4);
+        Assertions.assertEquals(3, vd.getDomainsCount());
+        Assertions.assertEquals(2, vd.getDomainsCount(false, Status.ANY));
+        Assertions.assertEquals(2, vd.getDomainsCount(false, Status.IS_SIMPLY_CONNECTED));
     }
 }
