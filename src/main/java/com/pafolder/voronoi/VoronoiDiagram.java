@@ -5,7 +5,7 @@ import java.util.List;
 
 public class VoronoiDiagram {
     private static final int OFFSET_OF_COLOR_IN_DATA_ARRAY = 1;
-    private static final int OFFSET_OF_ADJACENT_INDICES_IN_DATA_ARRAY = 2;
+    private static final int OFFSET_OF_ADJACENT_CELLS_INDICES_IN_DATA_ARRAY = 2;
 
     private List<CellWithAdjacents> cellsWithAdjacents;
     private List<Domain> domains;
@@ -37,7 +37,7 @@ public class VoronoiDiagram {
         for (int[] d : dataArray) {
             CellWithAdjacents cell = new CellWithAdjacents();
             cell.isWhite = d[OFFSET_OF_COLOR_IN_DATA_ARRAY] == 1;
-            for (int j = OFFSET_OF_ADJACENT_INDICES_IN_DATA_ARRAY; j < d.length; j++) {
+            for (int j = OFFSET_OF_ADJACENT_CELLS_INDICES_IN_DATA_ARRAY; j < d.length; j++) {
                 cell.adjacentCellsIndices.add(d[j]);
             }
             cellsWithAdjacents.add(cell);
@@ -61,7 +61,9 @@ public class VoronoiDiagram {
     private List<Integer> getAdjacentCellsOfSameColorIndices(int cellIndex) {
         List<Integer> result = new ArrayList<>();
         cellsWithAdjacents.get(cellIndex).adjacentCellsIndices.forEach(i -> {
-            if (cellsWithAdjacents.get(i).isWhite == cellsWithAdjacents.get(cellIndex).isWhite) result.add(i);
+            if (cellsWithAdjacents.get(i).isWhite == cellsWithAdjacents.get(cellIndex).isWhite) {
+                result.add(i);
+            }
         });
         return result;
     }
@@ -90,7 +92,6 @@ public class VoronoiDiagram {
         computeDomainsIfNeeded();
         return domains.size();
     }
-
 
     public int getDomainsCount(boolean isWhite, Status status) {
         computeDomainsIfNeeded();

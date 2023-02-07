@@ -1,7 +1,7 @@
 Simply-Connected Domains Discovery Application
 =============================================
 
-### finds domains in Voronoi Diagram and checks if they are Simply-Connected
+### Domains are searched on the Voronoi Diagram and checked if they are Simply-Connected
 A brief description of the implementation of the algorithm is as follows: 
 
 - Voronoi Diagram is represented by `VoronoiDiagram` class and is based on a list of Cells.
@@ -20,7 +20,7 @@ Each Domain Cells' indices can be found in `cellIndices` property of the `Domain
 `VoronoiDiagram#computeDomains()`
 and provided just for further tasks only.
 - There are 4 test cases implemented in the Junit section. A Graphical explanation of the initialization values in
-`Data` class are:[&ensp;1](png/example1.png)
-  [&ensp;2](png/example1.png)
-  [&ensp;3](png/example1.png)
-  [&ensp;4](png/example1.png)
+`Data` class are:&ensp;[1](png/example1.png)
+  &ensp;[2](png/example2.png)
+  &ensp;[3](png/example3.png)
+  &ensp;[4](png/example4.png)
